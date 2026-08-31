@@ -1,55 +1,58 @@
-# Integrative Multi-Omics Analysis of Chromosome 17 in TCGA Breast Cancer (Ongoing)
+# Multi-Omics Profiling of Chromosome 17 in TCGA-BRCA
 
-Integrative analysis of **Copy Number Variation**, **RNA-seq expression**, and **DNA Methylation** across three independent but connected projects, using open-access derived data from TCGA-BRCA.
+Self-directed bioinformatics project exploring copy-number variation,
+RNA-seq expression, and DNA methylation in TCGA breast cancer data,
+with a biological focus on ERBB2, TP53, and BRCA1 on chromosome 17.
 
-Biological focus: **ERBB2**, **TP53**, and **BRCA1** on chromosome 17.
-
-> Wet lab → dry lab transition project. Adapted from the [SARS-CoV-2 Genomic Surveillance Pipeline](../sars-cov2-surveillance).  
-> Reference: *Comprehensive molecular portraits of human breast tumours* — TCGA Network, Nature 2012.
+The project was developed as part of my transition from wet-lab
+molecular biology to computational genomics.
 
 ---
 
 ## Project structure
 
 ```
-tcga-brca-multiomics/
-├── data/
-│   ├── raw/
-│   │   ├── manifest_clean.txt        # 44-file GDC manifest (filtered)
-│   │   ├── master_sample_table.tsv   # maps file_id → case, data type, tissue
-│   │   └── downloads/                # temporary gdc-client output
-│   ├── cnv/
-│   │   ├── tumor/                    # Masked Copy Number Segment — Primary Tumor
-│   │   └── normal/                   # Masked Copy Number Segment — Normal
-│   ├── rna/
-│   │   ├── tumor/                    # STAR gene counts TSV — Primary Tumor
-│   │   └── normal/                   # STAR gene counts TSV — Normal (4 cases)
-│   └── methylation/
-│       ├── tumor/                    # Methylation Beta Value TXT — Primary Tumor
-│       └── normal/                   # Methylation Beta Value TXT — Normal (4 cases)
-├── results/
-│   ├── cnv/                          # CNV analysis outputs
-│   ├── rna/                          # DESeq2 outputs
-│   └── methylation/                  # minfi / ChAMP outputs
-├── figures/                          # Final plots (PDF/PNG)
-├── scripts/
-│   ├── 00_download.sh                # GDC download + file organization
-│   ├── 01_qc.sh                      # FastQC + MultiQC (recycled)
-│   ├── 02_alignment.sh               # BWA-MEM + samtools markdup *
-│   ├── 03_cnvkit.sh                  # CNVkit batch/call/export *
-│   ├── 04_cnv_analysis.R             # CNV visualization + stats
-│   ├── 05_rnaseq.R                   # DESeq2 normalization + DEG  [future]
-│   ├── 06_methylation.R              # minfi / ChAMP + DMR analysis [future]
-│   └── 07_integration.R              # Multi-omics integration      [future]
-├── environment.yml                   # Conda environment (all 3 projects)
-└── README.md
+GDC open-access derived data
+        │
+        ├── CNV
+        │     └── gene-level and chr17 analyses
+        │
+        ├── RNA-seq
+        │     └── DESeq2 differential expression
+        │
+        └── DNA methylation
+              └── differential methylation analysis
+
+Completed as three independent analyses.
+
+Planned extension:
+CNV × expression × methylation integration
 ```
 
 > \* Scripts `02_alignment.sh` and `03_cnvkit.sh` are included for completeness and
 > future use with controlled-access FASTQs (e.g. dbGaP / PhD cluster).
 > The current open-access workflow starts at `00_download.sh` and proceeds
 > directly to the analysis scripts (`04`, `05`, `06`).
+## Project scope
 
+Three omics layers were analyzed independently:
+
+- Copy-number variation (CNV)
+- RNA-seq gene expression
+- DNA methylation
+
+The original goal was to integrate the three modalities across a larger
+matched cohort. However, scaling the analysis to a more informative
+sample size exceeded the computational resources available on my local
+machine. Therefore, the repository presents the completed layer-specific
+analyses, while cross-omic integration remains a future extension.
+
+## Current status
+
+- ✅ CNV analysis completed
+- ✅ RNA-seq analysis completed
+- ✅ DNA methylation analysis completed
+- ⏸ Cross-omic integration not completed due to local computational constraints
 ---
 
 ## Pipeline overview
@@ -69,15 +72,13 @@ GDC Portal (open access)
         ├──▶ 04_cnv_analysis.R
         │    chr17 segments · ERBB2/TP53/BRCA1 heatmap · Gviz locus plots
         │
-        ├──▶ 05_rnaseq.R              [future]
+        ├──▶ 05_rnaseq.R              
         │    DESeq2 normalization · DEG tumor vs normal · volcano plots
         │
-        ├──▶ 06_methylation.R         [future]
-        │    minfi QC · beta/M-value · DMR detection · methylation heatmap
-        │
-        └──▶ 07_integration.R         [future]
-             CNV × expression correlation · methylation × expression
-             multi-omics heatmap · MOFA+ factor analysis
+        └──▶ 06_methylation.R         
+           minfi QC · beta/M-value · DMR detection · methylation heatmap
+        
+       
 ```
 
 ### Future workflow — controlled-access FASTQs (dbGaP)
@@ -110,6 +111,18 @@ diversity across expected chr17 alteration patterns.
 | TCGA-BH-A18Q | Basal-like | Negative | TP53 deletion / BRCA1 loss |
 | TCGA-A2-A0CU | Luminal A | Negative | Biological control |
 | TCGA-AR-A0TR | Luminal A | Negative | Biological control |
+
+## Cohort limitation
+
+The initial proof-of-concept cohort contained nine TCGA-BRCA cases,
+with matched solid-tissue normal samples available for only a subset
+of RNA-seq and methylation analyses.
+
+This cohort was sufficient for workflow development and exploratory
+analysis, but I considered it too limited for a robust integrative
+multi-omics interpretation. Expanding the cohort substantially
+increased local memory and processing requirements, so the integration
+stage was not pursued further on the available hardware.
 
 ### Data availability per case
 
@@ -216,20 +229,14 @@ conda env create -f environment_locked.yml
 - **Scalability**: scripts iterate over files in `data/` directories. Adding more samples requires only updating the manifest and re-running — no script changes needed.
 
 ---
-## Project Status
-Active development
+## Skills demonstrated
 
-- ✅ CNV analysis completed
-- ✅ RNA-seq analysis completed
-- ✅ Methylation analysis completed
-- 🔄 Multi-omics integration planned
-- 🔄 Results discussion planned
-
+- R-based analysis of biological datasets
+- DESeq2 differential-expression analysis
+- CNV analysis and visualization
+- DNA methylation analysis
+- TCGA/GDC data organization
+- Reproducible project structure with Git and Conda
+- Biological interpretation of multi-layer molecular data
 ---
-## Related projects
 
-- [SARS-CoV-2 Genomic Surveillance](../sars-cov2-surveillance) — variant calling pipeline (BWA-MEM → BCFtools → SnpEff) that originated the QC and alignment scripts reused here.
-  > Note: these steps are not executed in the current workflow, as preprocessed TCGA data were used.
-- Future: RNA-seq differential expression (`05_rnaseq.R`)
-- Future: DNA methylation analysis (`06_methylation.R`)
-- Future: Multi-omics integration (`07_integration.R`) — connects all three projects
